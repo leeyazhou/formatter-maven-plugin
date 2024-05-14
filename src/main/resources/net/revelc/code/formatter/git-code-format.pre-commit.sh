@@ -14,4 +14,4 @@
 #
 
 set -e
-%s -f %s com.github.leeyazhou.formatter:formatter-maven-plugin:on-pre-commit %s
+%s -f %s com.github.leeyazhou.formatter:formatter-maven-plugin:format %s
