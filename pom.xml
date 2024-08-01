@@ -631,13 +631,17 @@
             </goals>
             <phase>process-resources</phase>
             <configuration>
-              <header>${project.basedir}/src/build/license-header.txt</header>
-              <excludes>
-                <exclude>**/target/**</exclude>
-                <exclude>LICENSE</exclude>
-                <exclude>NOTICE</exclude>
-                <exclude>.gitattributes</exclude>
-              </excludes>
+              <licenseSets>
+                <licenseSet>
+                  <header>${project.basedir}/src/build/license-header.txt</header>
+                  <excludes>
+                    <exclude>**/target/**</exclude>
+                    <exclude>LICENSE</exclude>
+                    <exclude>NOTICE</exclude>
+                    <exclude>.gitattributes</exclude>
+                  </excludes>
+                </licenseSet>
+              </licenseSets>
               <mapping>
                 <java>SLASHSTAR_STYLE</java>
                 <vm>XML_STYLE</vm>
