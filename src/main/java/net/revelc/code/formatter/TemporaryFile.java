@@ -35,30 +35,55 @@
  */
 package net.revelc.code.formatter;
 
-import java.io.File;
-import java.util.Map;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import org.apache.maven.plugin.logging.Log;
+import net.revelc.code.formatter.exception.MavenGitCodeFormatException;
 
 /**
- * @author marvin.froeder
+ * @author Réda Housni Alaoui
+ * @author leeyazhou
  */
-public interface Formatter {
+public class TemporaryFile implements Closeable {
+  private final Log log;
 
-  FileExtension fileExtension();
+  private final Path file;
 
-  /**
-   * Initialize the {@link org.eclipse.jdt.core.formatter.CodeFormatter} instance to be used by this
-   * component.
-   */
-  void init(Map<String, String> options, ConfigurationSource cfg);
+  private TemporaryFile(Log log, String virtualName) {
+    this.log = log;
+    try {
+      this.file = Files.createTempFile(null, null);
+    } catch (IOException e) {
+      throw new MavenGitCodeFormatException(e);
+    }
+    log.debug("Temporary file virtually named '" + virtualName + "' is viewable at '" + file + "'");
+  }
 
-  /**
-   * Format individual file.
-   */
-  String formatFile(File file, String originalCode, LineEnding ending);
+  public static TemporaryFile create(Log log, String virtualName) {
+    return new TemporaryFile(log, virtualName);
+  }
 
-  /**
-   * return true if this formatter have been initialized
-   */
-  boolean isInitialized();
+  public OutputStream newOutputStream() throws IOException {
+    return Files.newOutputStream(file);
+  }
 
+  public InputStream newInputStream() throws IOException {
+    return Files.newInputStream(file);
+  }
+
+  public long size() throws IOException {
+    return Files.size(file);
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (log.isDebugEnabled()) {
+      return;
+    }
+    Files.delete(file);
+  }
 }

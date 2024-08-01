@@ -33,6 +33,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+/*
+ * Licensed under the t use this file except in compliance with the License. You may obtain a copy
+ * of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package net.revelc.code.formatter;
 
 import java.io.File;
@@ -41,7 +63,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +75,8 @@ import org.apache.maven.project.MavenProject;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import net.revelc.code.formatter.exception.MavenGitCodeFormatException;
+import net.revelc.code.formatter.formatter.CodeFormatters;
+import net.revelc.code.formatter.java.JavaFormatter;
 
 /**
  * Created on 01/11/17.
@@ -59,76 +85,82 @@ import net.revelc.code.formatter.exception.MavenGitCodeFormatException;
  */
 public abstract class AbstractMavenGitCodeFormatMojo extends AbstractMojo {
 
-    protected static final String HOOKS_DIR = "hooks";
+  protected static final String HOOKS_DIR = "hooks";
 
-    @Parameter(readonly = true, defaultValue = "${project}")
-    private MavenProject currentProject;
+  private final Supplier<List<Formatter>> codeFormatters;
 
-    @Parameter(defaultValue = "${project.build.sourceEncoding}")
-    private String sourceEncoding;
+  @Parameter(readonly = true, defaultValue = "${project}")
+  private MavenProject currentProject;
 
-    public AbstractMavenGitCodeFormatMojo() {
+  @Parameter(defaultValue = "${project.build.sourceEncoding}")
+  private String sourceEncoding;
+
+  public AbstractMavenGitCodeFormatMojo() {
+    codeFormatters = () -> Collections.singletonList(new JavaFormatter());
+
+  }
+
+  protected final Repository gitRepository() {
+    Repository gitRepository;
+    try {
+      FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder().findGitDir(currentProject.getBasedir());
+      String gitIndexFileEnvVariable = System.getenv("GIT_INDEX_FILE");
+      if (StringUtils.isNotBlank(gitIndexFileEnvVariable)) {
+        repositoryBuilder = repositoryBuilder.setIndexFile(new File(gitIndexFileEnvVariable));
+      }
+      gitRepository = repositoryBuilder.build();
+    } catch (IOException e) {
+      throw new MavenGitCodeFormatException("Could not find the git repository. Run 'git init' if you did not.", e);
     }
+    return gitRepository;
+  }
 
-    protected final Repository gitRepository() {
-        Repository gitRepository;
-        try {
-            FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder()
-                    .findGitDir(currentProject.getBasedir());
-            String gitIndexFileEnvVariable = System.getenv("GIT_INDEX_FILE");
-            if (StringUtils.isNotBlank(gitIndexFileEnvVariable)) {
-                repositoryBuilder = repositoryBuilder.setIndexFile(new File(gitIndexFileEnvVariable));
-            }
-            gitRepository = repositoryBuilder.build();
-        } catch (IOException e) {
-            throw new MavenGitCodeFormatException("Could not find the git repository. Run 'git init' if you did not.",
-                    e);
-        }
-        return gitRepository;
-    }
+  protected final Path pomFile() {
+    return currentProject.getFile().toPath();
+  }
 
-    protected final Path pomFile() {
-        return currentProject.getFile().toPath();
-    }
+  protected final List<Path> sourceDirs() {
+    return Stream.of(currentProject.getCompileSourceRoots(), currentProject.getTestCompileSourceRoots())
+        .flatMap(Collection::stream).map(Paths::get).collect(Collectors.toList());
+  }
 
-    protected final List<Path> sourceDirs() {
-        return Stream.of(currentProject.getCompileSourceRoots(), currentProject.getTestCompileSourceRoots())
-                .flatMap(Collection::stream).map(Paths::get).collect(Collectors.toList());
-    }
+  protected final Path targetDir() {
+    return Paths.get(currentProject.getBuild().getDirectory());
+  }
 
-    protected final Path targetDir() {
-        return Paths.get(currentProject.getBuild().getDirectory());
-    }
+  protected final String artifactId() {
+    return currentProject.getArtifactId();
+  }
 
-    protected final String artifactId() {
-        return currentProject.getArtifactId();
-    }
+  protected final CodeFormatters codeFormatters() {
+    return new CodeFormatters(codeFormatters.get());
+  }
 
-    protected final boolean isExecutionRoot() {
-        return currentProject.isExecutionRoot();
-    }
+  protected final boolean isExecutionRoot() {
+    return currentProject.isExecutionRoot();
+  }
 
-    /**
-     * Get or creates the git hooks directory
-     *
-     * @return The git hooks directory
-     */
-    protected final Path getOrCreateHooksDirectory() {
-        Path hooksDirectory = gitRepository().getDirectory().toPath().resolve(HOOKS_DIR);
-        if (!Files.exists(hooksDirectory)) {
-            getLog().debug("Creating directory " + hooksDirectory);
-            try {
-                Files.createDirectories(hooksDirectory);
-            } catch (IOException e) {
-                throw new MavenGitCodeFormatException(e);
-            }
-        } else {
-            getLog().debug(hooksDirectory + " already exists");
-        }
-        return hooksDirectory;
+  /**
+   * Get or creates the git hooks directory
+   *
+   * @return The git hooks directory
+   */
+  protected final Path getOrCreateHooksDirectory() {
+    Path hooksDirectory = gitRepository().getDirectory().toPath().resolve(HOOKS_DIR);
+    if (!Files.exists(hooksDirectory)) {
+      getLog().debug("Creating directory " + hooksDirectory);
+      try {
+        Files.createDirectories(hooksDirectory);
+      } catch (IOException e) {
+        throw new MavenGitCodeFormatException(e);
+      }
+    } else {
+      getLog().debug(hooksDirectory + " already exists");
     }
+    return hooksDirectory;
+  }
 
-    protected final Path gitBaseDir() {
-        return gitRepository().getDirectory().getParentFile().toPath();
-    }
+  protected final Path gitBaseDir() {
+    return gitRepository().getDirectory().getParentFile().toPath();
+  }
 }

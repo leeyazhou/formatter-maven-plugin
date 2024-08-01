@@ -22,21 +22,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package net.revelc.code.formatter.html;
+package net.revelc.code.formatter.formatter;
 
+import static java.util.Objects.requireNonNull;
+import java.util.List;
+import java.util.stream.Collectors;
 import net.revelc.code.formatter.FileExtension;
 import net.revelc.code.formatter.Formatter;
-import net.revelc.code.formatter.jsoup.JsoupBasedFormatter;
 
-/**
- * @author yoshiman
- */
-public class HTMLFormatter extends JsoupBasedFormatter implements Formatter {
+/** @author Réda Housni Alaoui */
+public class CodeFormatters {
 
-  // Nothing more necessary
+  private final List<Formatter> formatters;
 
-  @Override
-  public FileExtension fileExtension() {
-    return FileExtension.of("html");
+  public CodeFormatters(List<Formatter> formatters) {
+    this.formatters = requireNonNull(formatters);
+  }
+
+  public List<Formatter> forFileExtension(FileExtension fileExtension) {
+    return formatters.stream().filter(formatter -> formatter.fileExtension().equals(fileExtension))
+        .collect(Collectors.toList());
   }
 }
