@@ -25,15 +25,15 @@ import static java.util.Objects.requireNonNull;
 /** @author Réda Housni Alaoui */
 public class AutoCRLFRepository extends FileRepository {
 
-  private final EolStreamType eolStreamType;
+    private final EolStreamType eolStreamType;
 
-  public AutoCRLFRepository(File gitDir, EolStreamType eolStreamType) throws IOException {
-    super(gitDir);
-    this.eolStreamType = requireNonNull(eolStreamType);
-  }
+    public AutoCRLFRepository(File gitDir, EolStreamType eolStreamType) throws IOException {
+        super(gitDir);
+        this.eolStreamType = requireNonNull(eolStreamType);
+    }
 
-  @Override
-  public ObjectReader newObjectReader() {
-    return new AutoCRLFObjectReader(super.newObjectReader(), eolStreamType);
-  }
+    @Override
+    public ObjectReader newObjectReader() {
+        return new AutoCRLFObjectReader(super.newObjectReader(), eolStreamType);
+    }
 }

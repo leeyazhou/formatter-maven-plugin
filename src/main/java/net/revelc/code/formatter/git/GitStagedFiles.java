@@ -75,66 +75,68 @@ import net.revelc.code.formatter.formatter.CodeFormatters;
 /** @author Réda Housni Alaoui */
 public class GitStagedFiles {
 
-  private final Log log;
-  private final Repository repository;
-  private final Set<String> filePaths;
-  private final EolStreamType eolStreamType;
+    private final Log log;
+    private final Repository repository;
+    private final Set<String> filePaths;
+    private final EolStreamType eolStreamType;
 
-  private GitStagedFiles(Log log, Repository repository, Set<String> filePaths) {
-    this.log = requireNonNull(log);
-    this.repository = requireNonNull(repository);
-    this.filePaths = Collections.unmodifiableSet(filePaths);
+    private GitStagedFiles(Log log, Repository repository, Set<String> filePaths) {
+        this.log = requireNonNull(log);
+        this.repository = requireNonNull(repository);
+        this.filePaths = Collections.unmodifiableSet(filePaths);
 
-    WorkingTreeOptions workingTreeOptions = repository.getConfig().get(WorkingTreeOptions.KEY);
-    if (workingTreeOptions.getAutoCRLF() == AutoCRLF.TRUE) {
-      eolStreamType = EolStreamType.AUTO_CRLF;
-    } else {
-      eolStreamType = EolStreamType.DIRECT;
+        WorkingTreeOptions workingTreeOptions = repository.getConfig().get(WorkingTreeOptions.KEY);
+        if (workingTreeOptions.getAutoCRLF() == AutoCRLF.TRUE) {
+            eolStreamType = EolStreamType.AUTO_CRLF;
+        } else {
+            eolStreamType = EolStreamType.DIRECT;
+        }
+        log.debug("eolStreamType is '" + eolStreamType + "'");
     }
-    log.debug("eolStreamType is '" + eolStreamType + "'");
-  }
 
-  public static GitStagedFiles read(Log log, Repository repository, Predicate<Path> fileFilter) throws GitAPIException {
-    try (Git git = new Git(repository)) {
-      Status gitStatus = git.status().call();
-      Path workTree = repository.getWorkTree().toPath();
-      Set<String> filePaths = Stream.concat(gitStatus.getChanged().stream(), gitStatus.getAdded().stream())
-          .filter(relativePath -> fileFilter.test(workTree.resolve(relativePath))).collect(Collectors.toSet());
-      log.debug("Staged files: " + filePaths.toString());
-      return new GitStagedFiles(log, repository, filePaths);
+    public static GitStagedFiles read(Log log, Repository repository, Predicate<Path> fileFilter)
+            throws GitAPIException {
+        try (Git git = new Git(repository)) {
+            Status gitStatus = git.status().call();
+            Path workTree = repository.getWorkTree().toPath();
+            Set<String> filePaths = Stream.concat(gitStatus.getChanged().stream(), gitStatus.getAdded().stream())
+                    .filter(relativePath -> fileFilter.test(workTree.resolve(relativePath)))
+                    .collect(Collectors.toSet());
+            log.debug("Staged files: " + filePaths.toString());
+            return new GitStagedFiles(log, repository, filePaths);
+        }
     }
-  }
 
-  public void format(CodeFormatters formatters) throws IOException {
+    public void format(CodeFormatters formatters) throws IOException {
 
-    try (Git git = new Git(repository);
-        Index index = Index.lock(repository);
-        TemporaryFile temporaryDiffFile = TemporaryFile.create(log, "diff-between-unformatted-and-formatted-files")) {
-      DirCacheEditor dirCacheEditor = index.editor();
-      filePaths.stream().map(path -> new GitIndexEntry(log, repository, path))
-          .map(indexEntry -> indexEntry.entryFormatter(formatters)).forEach(dirCacheEditor::add);
-      dirCacheEditor.finish();
+        try (Git git = new Git(repository); Index index = Index.lock(repository);
+                TemporaryFile temporaryDiffFile = TemporaryFile.create(log,
+                        "diff-between-unformatted-and-formatted-files")) {
+            DirCacheEditor dirCacheEditor = index.editor();
+            filePaths.stream().map(path -> new GitIndexEntry(log, repository, path))
+                    .map(indexEntry -> indexEntry.entryFormatter(formatters)).forEach(dirCacheEditor::add);
+            dirCacheEditor.finish();
 
-      index.write();
+            index.write();
 
-      try (Repository autoCRLFRepository = new AutoCRLFRepository(git.getRepository().getDirectory(), eolStreamType);
-          OutputStream diffOutput = temporaryDiffFile.newOutputStream();
-          Git diffGit = new Git(autoCRLFRepository)) {
-        diffGit.diff().setOutputStream(diffOutput).setOldTree(treeIterator(repository.readDirCache()))
-            .setNewTree(index.treeIterator()).call();
-      }
+            try (Repository autoCRLFRepository = new AutoCRLFRepository(git.getRepository().getDirectory(),
+                    eolStreamType); OutputStream diffOutput = temporaryDiffFile.newOutputStream();
+                    Git diffGit = new Git(autoCRLFRepository)) {
+                diffGit.diff().setOutputStream(diffOutput).setOldTree(treeIterator(repository.readDirCache()))
+                        .setNewTree(index.treeIterator()).call();
+            }
 
-      try (InputStream diffInput = temporaryDiffFile.newInputStream()) {
-        git.apply().setPatch(diffInput).call();
-      }
+            try (InputStream diffInput = temporaryDiffFile.newInputStream()) {
+                git.apply().setPatch(diffInput).call();
+            }
 
-      index.commit();
-    } catch (GitAPIException e) {
-      throw new MavenGitCodeFormatException(e);
+            index.commit();
+        } catch (GitAPIException e) {
+            throw new MavenGitCodeFormatException(e);
+        }
     }
-  }
 
-  private AbstractTreeIterator treeIterator(DirCache dirCache) {
-    return new DirCacheIterator(dirCache);
-  }
+    private AbstractTreeIterator treeIterator(DirCache dirCache) {
+        return new DirCacheIterator(dirCache);
+    }
 }

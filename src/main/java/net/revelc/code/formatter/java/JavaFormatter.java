@@ -57,70 +57,71 @@ import net.revelc.code.formatter.LineEnding;
 
 public class JavaFormatter extends AbstractCacheableFormatter implements Formatter {
 
-  private CodeFormatter formatter;
-  private Pattern exclusionPattern;
+    private CodeFormatter formatter;
+    private Pattern exclusionPattern;
 
-  @Override
-  public FileExtension fileExtension() {
-    return FileExtension.of("java");
-  }
-
-  @Override
-  public void init(Map<String, String> options, ConfigurationSource cfg) {
-    super.initCfg(cfg);
-
-    this.formatter = ToolFactory.createCodeFormatter(options, ToolFactory.M_FORMAT_EXISTING);
-  }
-
-  @Override
-  public String doFormat(String code, LineEnding ending) throws IOException, BadLocationException {
-    TextEdit te;
-    try {
-      IRegion[] regions = getRegions(code, exclusionPattern);
-      te = this.formatter.format(CodeFormatter.K_COMPILATION_UNIT | CodeFormatter.F_INCLUDE_COMMENTS, code, regions, 0,
-          ending.getChars());
-      if (te == null) {
-        this.log.debug("Code cannot be formatted. Possible cause is unmatched source/target/compliance version.");
-        return null;
-      }
-    } catch (IndexOutOfBoundsException e) {
-      this.log.debug("Code cannot be formatted for text -->" + code + "<--", e);
-      return null;
+    @Override
+    public FileExtension fileExtension() {
+        return FileExtension.of("java");
     }
 
-    IDocument doc = new Document(code);
-    te.apply(doc);
-    String formattedCode = doc.get();
+    @Override
+    public void init(Map<String, String> options, ConfigurationSource cfg) {
+        super.initCfg(cfg);
 
-    if (code.equals(formattedCode)) {
-      return null;
+        this.formatter = ToolFactory.createCodeFormatter(options, ToolFactory.M_FORMAT_EXISTING);
     }
-    return formattedCode;
-  }
 
-  @Override
-  public boolean isInitialized() {
-    return formatter != null;
-  }
+    @Override
+    public String doFormat(String code, LineEnding ending) throws IOException, BadLocationException {
+        TextEdit te;
+        try {
+            IRegion[] regions = getRegions(code, exclusionPattern);
+            te = this.formatter.format(CodeFormatter.K_COMPILATION_UNIT | CodeFormatter.F_INCLUDE_COMMENTS, code,
+                    regions, 0, ending.getChars());
+            if (te == null) {
+                this.log.debug(
+                        "Code cannot be formatted. Possible cause is unmatched source/target/compliance version.");
+                return null;
+            }
+        } catch (IndexOutOfBoundsException e) {
+            this.log.debug("Code cannot be formatted for text -->" + code + "<--", e);
+            return null;
+        }
 
-  public void setExclusionPattern(String ep) {
-    exclusionPattern = Pattern.compile(ep, Pattern.MULTILINE);
-  }
+        IDocument doc = new Document(code);
+        te.apply(doc);
+        String formattedCode = doc.get();
 
-  protected static IRegion[] getRegions(String code, Pattern exclusionPattern) {
-    List<IRegion> regions = new ArrayList<>();
-    int start = 0;
-    if (exclusionPattern != null) {
-      Matcher matcher = exclusionPattern.matcher(code);
-      while (matcher.find()) {
-        int s = matcher.start();
-        int e = matcher.end();
-        regions.add(new Region(start, s - start));
-        start = e;
-      }
+        if (code.equals(formattedCode)) {
+            return null;
+        }
+        return formattedCode;
     }
-    regions.add(new Region(start, code.length() - start));
-    return regions.toArray(new IRegion[0]);
-  }
+
+    @Override
+    public boolean isInitialized() {
+        return formatter != null;
+    }
+
+    public void setExclusionPattern(String ep) {
+        exclusionPattern = Pattern.compile(ep, Pattern.MULTILINE);
+    }
+
+    protected static IRegion[] getRegions(String code, Pattern exclusionPattern) {
+        List<IRegion> regions = new ArrayList<>();
+        int start = 0;
+        if (exclusionPattern != null) {
+            Matcher matcher = exclusionPattern.matcher(code);
+            while (matcher.find()) {
+                int s = matcher.start();
+                int e = matcher.end();
+                regions.add(new Region(start, s - start));
+                start = e;
+            }
+        }
+        regions.add(new Region(start, code.length() - start));
+        return regions.toArray(new IRegion[0]);
+    }
 
 }

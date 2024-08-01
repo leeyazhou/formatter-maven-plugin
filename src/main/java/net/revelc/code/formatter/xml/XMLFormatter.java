@@ -39,52 +39,52 @@ import net.revelc.code.formatter.xml.lib.XmlDocumentFormatter;
  * @author jam01
  */
 public class XMLFormatter extends AbstractCacheableFormatter implements Formatter {
-  private XmlDocumentFormatter formatter;
+    private XmlDocumentFormatter formatter;
 
-  @Override
-  public FileExtension fileExtension() {
-    return FileExtension.of("xml");
-  }
-
-  @Override
-  public void init(Map<String, String> options, ConfigurationSource cfg) {
-    super.initCfg(cfg);
-
-    FormattingPreferences prefs = new FormattingPreferences();
-    String maxLineLength = options.get("maxLineLength");
-    String wrapLongLines = options.get("wrapLongLines");
-    String tabInsteadOfSpaces = options.get("tabInsteadOfSpaces");
-    String tabWidth = options.get("tabWidth");
-    String splitMultiAttrs = options.get("splitMultiAttrs");
-    String wellFormedValidation = options.get("wellFormedValidation");
-
-    prefs.setMaxLineLength(maxLineLength != null ? Integer.valueOf(maxLineLength) : null);
-    prefs.setWrapLongLines(wrapLongLines != null ? Boolean.valueOf(wrapLongLines) : null);
-    prefs.setTabInsteadOfSpaces(tabInsteadOfSpaces != null ? Boolean.valueOf(tabInsteadOfSpaces) : null);
-    prefs.setTabWidth(tabWidth != null ? Integer.valueOf(tabWidth) : null);
-    prefs.setSplitMultiAttrs(splitMultiAttrs != null ? Boolean.valueOf(splitMultiAttrs) : null);
-
-    if (wellFormedValidation != null) {
-      prefs.setWellFormedValidation(wellFormedValidation);
+    @Override
+    public FileExtension fileExtension() {
+        return FileExtension.of("xml");
     }
 
-    this.formatter = new XmlDocumentFormatter(options.getOrDefault("lineending", System.lineSeparator()), prefs);
-  }
+    @Override
+    public void init(Map<String, String> options, ConfigurationSource cfg) {
+        super.initCfg(cfg);
 
-  @Override
-  protected String doFormat(String code, LineEnding ending) {
-    String formattedCode = formatter.format(code);
+        FormattingPreferences prefs = new FormattingPreferences();
+        String maxLineLength = options.get("maxLineLength");
+        String wrapLongLines = options.get("wrapLongLines");
+        String tabInsteadOfSpaces = options.get("tabInsteadOfSpaces");
+        String tabWidth = options.get("tabWidth");
+        String splitMultiAttrs = options.get("splitMultiAttrs");
+        String wellFormedValidation = options.get("wellFormedValidation");
 
-    if (code.equals(formattedCode)) {
-      return null;
+        prefs.setMaxLineLength(maxLineLength != null ? Integer.valueOf(maxLineLength) : null);
+        prefs.setWrapLongLines(wrapLongLines != null ? Boolean.valueOf(wrapLongLines) : null);
+        prefs.setTabInsteadOfSpaces(tabInsteadOfSpaces != null ? Boolean.valueOf(tabInsteadOfSpaces) : null);
+        prefs.setTabWidth(tabWidth != null ? Integer.valueOf(tabWidth) : null);
+        prefs.setSplitMultiAttrs(splitMultiAttrs != null ? Boolean.valueOf(splitMultiAttrs) : null);
+
+        if (wellFormedValidation != null) {
+            prefs.setWellFormedValidation(wellFormedValidation);
+        }
+
+        this.formatter = new XmlDocumentFormatter(options.getOrDefault("lineending", System.lineSeparator()), prefs);
     }
 
-    return formattedCode;
-  }
+    @Override
+    protected String doFormat(String code, LineEnding ending) {
+        String formattedCode = formatter.format(code);
 
-  @Override
-  public boolean isInitialized() {
-    return formatter != null;
-  }
+        if (code.equals(formattedCode)) {
+            return null;
+        }
+
+        return formattedCode;
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return formatter != null;
+    }
 
 }

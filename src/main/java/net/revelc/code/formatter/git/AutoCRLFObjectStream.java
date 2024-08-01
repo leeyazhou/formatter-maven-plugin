@@ -25,27 +25,26 @@ import static java.util.Objects.requireNonNull;
 /** @author Réda Housni Alaoui */
 public class AutoCRLFObjectStream extends ObjectStream {
 
-  private final ObjectStream delegate;
-  private final InputStream autoCRLFInputStream;
+    private final ObjectStream delegate;
+    private final InputStream autoCRLFInputStream;
 
-  public AutoCRLFObjectStream(ObjectStream delegate, EolStreamType eolStreamType) {
-    this.delegate = requireNonNull(delegate);
-    this.autoCRLFInputStream =
-        requireNonNull(EolStreamTypeUtil.wrapInputStream(delegate, eolStreamType));
-  }
+    public AutoCRLFObjectStream(ObjectStream delegate, EolStreamType eolStreamType) {
+        this.delegate = requireNonNull(delegate);
+        this.autoCRLFInputStream = requireNonNull(EolStreamTypeUtil.wrapInputStream(delegate, eolStreamType));
+    }
 
-  @Override
-  public int getType() {
-    return delegate.getType();
-  }
+    @Override
+    public int getType() {
+        return delegate.getType();
+    }
 
-  @Override
-  public long getSize() {
-    return delegate.getSize();
-  }
+    @Override
+    public long getSize() {
+        return delegate.getSize();
+    }
 
-  @Override
-  public int read() throws IOException {
-    return autoCRLFInputStream.read();
-  }
+    @Override
+    public int read() throws IOException {
+        return autoCRLFInputStream.read();
+    }
 }

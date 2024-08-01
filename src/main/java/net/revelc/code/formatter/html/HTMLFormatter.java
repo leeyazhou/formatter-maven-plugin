@@ -33,10 +33,10 @@ import net.revelc.code.formatter.jsoup.JsoupBasedFormatter;
  */
 public class HTMLFormatter extends JsoupBasedFormatter implements Formatter {
 
-  // Nothing more necessary
+    // Nothing more necessary
 
-  @Override
-  public FileExtension fileExtension() {
-    return FileExtension.of("html");
-  }
+    @Override
+    public FileExtension fileExtension() {
+        return FileExtension.of("html");
+    }
 }

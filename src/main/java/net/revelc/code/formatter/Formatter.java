@@ -43,22 +43,21 @@ import java.util.Map;
  */
 public interface Formatter {
 
-  FileExtension fileExtension();
+    FileExtension fileExtension();
 
-  /**
-   * Initialize the {@link org.eclipse.jdt.core.formatter.CodeFormatter} instance to be used by this
-   * component.
-   */
-  void init(Map<String, String> options, ConfigurationSource cfg);
+    /**
+     * Initialize the {@link org.eclipse.jdt.core.formatter.CodeFormatter} instance to be used by this component.
+     */
+    void init(Map<String, String> options, ConfigurationSource cfg);
 
-  /**
-   * Format individual file.
-   */
-  String formatFile(File file, String originalCode, LineEnding ending);
+    /**
+     * Format individual file.
+     */
+    String formatFile(File file, String originalCode, LineEnding ending);
 
-  /**
-   * return true if this formatter have been initialized
-   */
-  boolean isInitialized();
+    /**
+     * return true if this formatter have been initialized
+     */
+    boolean isInitialized();
 
 }

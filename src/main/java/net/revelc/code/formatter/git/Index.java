@@ -24,34 +24,34 @@ import java.io.IOException;
 /** @author Réda Housni Alaoui */
 public class Index implements AutoCloseable {
 
-  private final DirCache dirCache;
+    private final DirCache dirCache;
 
-  private Index(Repository repository) throws IOException {
-    dirCache = repository.lockDirCache();
-  }
+    private Index(Repository repository) throws IOException {
+        dirCache = repository.lockDirCache();
+    }
 
-  public static Index lock(Repository repository) throws IOException {
-    return new Index(repository);
-  }
+    public static Index lock(Repository repository) throws IOException {
+        return new Index(repository);
+    }
 
-  public DirCacheEditor editor() {
-    return dirCache.editor();
-  }
+    public DirCacheEditor editor() {
+        return dirCache.editor();
+    }
 
-  public void write() throws IOException {
-    dirCache.write();
-  }
+    public void write() throws IOException {
+        dirCache.write();
+    }
 
-  public void commit() {
-    dirCache.commit();
-  }
+    public void commit() {
+        dirCache.commit();
+    }
 
-  public AbstractTreeIterator treeIterator() {
-    return new DirCacheIterator(dirCache);
-  }
+    public AbstractTreeIterator treeIterator() {
+        return new DirCacheIterator(dirCache);
+    }
 
-  @Override
-  public void close() {
-    dirCache.unlock();
-  }
+    @Override
+    public void close() {
+        dirCache.unlock();
+    }
 }

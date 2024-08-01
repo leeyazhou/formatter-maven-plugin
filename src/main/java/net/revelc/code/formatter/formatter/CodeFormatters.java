@@ -33,14 +33,14 @@ import net.revelc.code.formatter.Formatter;
 /** @author Réda Housni Alaoui */
 public class CodeFormatters {
 
-  private final List<Formatter> formatters;
+    private final List<Formatter> formatters;
 
-  public CodeFormatters(List<Formatter> formatters) {
-    this.formatters = requireNonNull(formatters);
-  }
+    public CodeFormatters(List<Formatter> formatters) {
+        this.formatters = requireNonNull(formatters);
+    }
 
-  public List<Formatter> forFileExtension(FileExtension fileExtension) {
-    return formatters.stream().filter(formatter -> formatter.fileExtension().equals(fileExtension))
-        .collect(Collectors.toList());
-  }
+    public List<Formatter> forFileExtension(FileExtension fileExtension) {
+        return formatters.stream().filter(formatter -> formatter.fileExtension().equals(fileExtension))
+                .collect(Collectors.toList());
+    }
 }

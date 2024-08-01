@@ -31,37 +31,37 @@ import static java.util.Objects.requireNonNull;
 /** @author Réda Housni Alaoui */
 public class AutoCRLFObjectReader extends ObjectReader {
 
-  private final ObjectReader delegate;
-  private final EolStreamType eolStreamType;
+    private final ObjectReader delegate;
+    private final EolStreamType eolStreamType;
 
-  public AutoCRLFObjectReader(ObjectReader delegate, EolStreamType eolStreamType) {
-    this.delegate = requireNonNull(delegate);
-    this.eolStreamType = requireNonNull(eolStreamType);
-  }
+    public AutoCRLFObjectReader(ObjectReader delegate, EolStreamType eolStreamType) {
+        this.delegate = requireNonNull(delegate);
+        this.eolStreamType = requireNonNull(eolStreamType);
+    }
 
-  @Override
-  public ObjectReader newReader() {
-    return new AutoCRLFObjectReader(delegate.newReader(), eolStreamType);
-  }
+    @Override
+    public ObjectReader newReader() {
+        return new AutoCRLFObjectReader(delegate.newReader(), eolStreamType);
+    }
 
-  @Override
-  public Collection<ObjectId> resolve(AbbreviatedObjectId id) throws IOException {
-    return delegate.resolve(id);
-  }
+    @Override
+    public Collection<ObjectId> resolve(AbbreviatedObjectId id) throws IOException {
+        return delegate.resolve(id);
+    }
 
-  @Override
-  public ObjectLoader open(AnyObjectId objectId, int typeHint)
-      throws MissingObjectException, IncorrectObjectTypeException, IOException {
-    return new AutoCRLFObjectLoader(delegate.open(objectId, typeHint), eolStreamType);
-  }
+    @Override
+    public ObjectLoader open(AnyObjectId objectId, int typeHint)
+            throws MissingObjectException, IncorrectObjectTypeException, IOException {
+        return new AutoCRLFObjectLoader(delegate.open(objectId, typeHint), eolStreamType);
+    }
 
-  @Override
-  public Set<ObjectId> getShallowCommits() throws IOException {
-    return delegate.getShallowCommits();
-  }
+    @Override
+    public Set<ObjectId> getShallowCommits() throws IOException {
+        return delegate.getShallowCommits();
+    }
 
-  @Override
-  public void close() {
-    delegate.close();
-  }
+    @Override
+    public void close() {
+        delegate.close();
+    }
 }

@@ -49,41 +49,41 @@ import net.revelc.code.formatter.exception.MavenGitCodeFormatException;
  * @author leeyazhou
  */
 public class TemporaryFile implements Closeable {
-  private final Log log;
+    private final Log log;
 
-  private final Path file;
+    private final Path file;
 
-  private TemporaryFile(Log log, String virtualName) {
-    this.log = log;
-    try {
-      this.file = Files.createTempFile(null, null);
-    } catch (IOException e) {
-      throw new MavenGitCodeFormatException(e);
+    private TemporaryFile(Log log, String virtualName) {
+        this.log = log;
+        try {
+            this.file = Files.createTempFile(null, null);
+        } catch (IOException e) {
+            throw new MavenGitCodeFormatException(e);
+        }
+        log.debug("Temporary file virtually named '" + virtualName + "' is viewable at '" + file + "'");
     }
-    log.debug("Temporary file virtually named '" + virtualName + "' is viewable at '" + file + "'");
-  }
 
-  public static TemporaryFile create(Log log, String virtualName) {
-    return new TemporaryFile(log, virtualName);
-  }
-
-  public OutputStream newOutputStream() throws IOException {
-    return Files.newOutputStream(file);
-  }
-
-  public InputStream newInputStream() throws IOException {
-    return Files.newInputStream(file);
-  }
-
-  public long size() throws IOException {
-    return Files.size(file);
-  }
-
-  @Override
-  public void close() throws IOException {
-    if (log.isDebugEnabled()) {
-      return;
+    public static TemporaryFile create(Log log, String virtualName) {
+        return new TemporaryFile(log, virtualName);
     }
-    Files.delete(file);
-  }
+
+    public OutputStream newOutputStream() throws IOException {
+        return Files.newOutputStream(file);
+    }
+
+    public InputStream newInputStream() throws IOException {
+        return Files.newInputStream(file);
+    }
+
+    public long size() throws IOException {
+        return Files.size(file);
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (log.isDebugEnabled()) {
+            return;
+        }
+        Files.delete(file);
+    }
 }

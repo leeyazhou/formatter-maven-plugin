@@ -47,42 +47,42 @@ import net.revelc.code.formatter.LineEnding;
  */
 public class CssFormatter extends AbstractCacheableFormatter implements Formatter {
 
-  private CSSFormat formatter;
+    private CSSFormat formatter;
 
-  @Override
-  public FileExtension fileExtension() {
-    return FileExtension.of("css");
-  }
-
-  @Override
-  public void init(Map<String, String> options, ConfigurationSource cfg) {
-    super.initCfg(cfg);
-
-    int indent = Integer.parseInt(options.getOrDefault("indent", "4"));
-    boolean rgbAsHex = Boolean.parseBoolean(options.getOrDefault("rgbAsHex", Boolean.TRUE.toString()));
-    boolean useSourceStringValues =
-        Boolean.parseBoolean(options.getOrDefault("useSourceStringValues", Boolean.FALSE.toString()));
-    formatter = new CSSFormat().setPropertiesInSeparateLines(indent).setRgbAsHex(rgbAsHex)
-        .setUseSourceStringValues(useSourceStringValues);
-  }
-
-  @Override
-  protected String doFormat(String code, LineEnding ending) throws IOException {
-
-    InputSource source = new InputSource(new StringReader(code));
-    CSSOMParser parser = new CSSOMParser(new SACParserCSS3());
-    CSSStyleSheetImpl sheet = (CSSStyleSheetImpl) parser.parseStyleSheet(source, null, null);
-    String formattedCode = sheet.getCssText(formatter);
-
-    if (code.equals(formattedCode)) {
-      return null;
+    @Override
+    public FileExtension fileExtension() {
+        return FileExtension.of("css");
     }
-    return formattedCode;
-  }
 
-  @Override
-  public boolean isInitialized() {
-    return formatter != null;
-  }
+    @Override
+    public void init(Map<String, String> options, ConfigurationSource cfg) {
+        super.initCfg(cfg);
+
+        int indent = Integer.parseInt(options.getOrDefault("indent", "4"));
+        boolean rgbAsHex = Boolean.parseBoolean(options.getOrDefault("rgbAsHex", Boolean.TRUE.toString()));
+        boolean useSourceStringValues = Boolean
+                .parseBoolean(options.getOrDefault("useSourceStringValues", Boolean.FALSE.toString()));
+        formatter = new CSSFormat().setPropertiesInSeparateLines(indent).setRgbAsHex(rgbAsHex)
+                .setUseSourceStringValues(useSourceStringValues);
+    }
+
+    @Override
+    protected String doFormat(String code, LineEnding ending) throws IOException {
+
+        InputSource source = new InputSource(new StringReader(code));
+        CSSOMParser parser = new CSSOMParser(new SACParserCSS3());
+        CSSStyleSheetImpl sheet = (CSSStyleSheetImpl) parser.parseStyleSheet(source, null, null);
+        String formattedCode = sheet.getCssText(formatter);
+
+        if (code.equals(formattedCode)) {
+            return null;
+        }
+        return formattedCode;
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return formatter != null;
+    }
 
 }

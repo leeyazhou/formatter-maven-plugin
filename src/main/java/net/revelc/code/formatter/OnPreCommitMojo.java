@@ -40,22 +40,22 @@ import net.revelc.code.formatter.git.GitStagedFiles;
 @Mojo(name = "on-pre-commit", defaultPhase = LifecyclePhase.NONE, threadSafe = true)
 public class OnPreCommitMojo extends AbstractModuleMavenGitCodeFormatMojo {
 
-  @Override
-  protected void doExecute() throws MojoExecutionException {
-    try {
-      getLog().info("Executing pre-commit hooks");
-      onPreCommit();
-      getLog().info("Executed pre-commit hooks");
-    } catch (Exception e) {
-      throw new MojoExecutionException(e.getMessage(), e);
+    @Override
+    protected void doExecute() throws MojoExecutionException {
+        try {
+            getLog().info("Executing pre-commit hooks");
+            onPreCommit();
+            getLog().info("Executed pre-commit hooks");
+        } catch (Exception e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+        }
     }
-  }
 
-  private void onPreCommit() throws IOException, GitAPIException {
-    GitStagedFiles.read(getLog(), gitRepository(), this::isFormattable).format(codeFormatters());
-  }
+    private void onPreCommit() throws IOException, GitAPIException {
+        GitStagedFiles.read(getLog(), gitRepository(), this::isFormattable).format(codeFormatters());
+    }
 
-  private boolean isFormattable(Path path) {
-    return sourceDirs().stream().anyMatch(path::startsWith);
-  }
+    private boolean isFormattable(Path path) {
+        return sourceDirs().stream().anyMatch(path::startsWith);
+    }
 }
